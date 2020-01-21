@@ -36,14 +36,16 @@
   "Metronome utilities."
   :group 'metronome)
 
-(defcustom metronome-high-click-sound (when load-file-name
-					(concat (file-name-directory load-file-name) "high.wav"))
-  "The filename of the high click sound."
+(defcustom metronome-click
+  (when load-file-name
+    (concat (file-name-directory load-file-name) "sounds/low.wav"))
+  "The filename of the low click sound."
   :type 'file)
 
-(defcustom metronome-low-click-sound (when load-file-name
-				       (concat (file-name-directory load-file-name) "low.wav"))
-  "The filename of the low click sound."
+(defcustom metronome-accent
+  (when load-file-name
+    (concat (file-name-directory load-file-name) "sounds/high.wav"))
+  "The filename of the high click sound."
   :type 'file)
 
 (defvar metronome-timer nil
