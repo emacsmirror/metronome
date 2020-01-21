@@ -89,6 +89,7 @@ Use the first click to distinguish the cycle."
 
 (defun metronome-start (bpm)
   "Start metronome at BPM beats per minute."
+  (metronome-stop)
   (setq metronome-timer
 	(run-at-time t (/ 60.0 (float bpm)) 'metronome-low-click))
   (setq metronome-tempo bpm
@@ -121,8 +122,7 @@ Use the first click to distinguish the cycle."
 With a prefix ARG, prompt for a new tempo."
   (interactive "P")
   (if (or arg (null metronome-timer))
-      (progn (metronome-stop)
-	     (metronome-start (read-number "Tempo: ")))
+      (metronome-start (read-number "Tempo: "))
     (if metronome-paused-p
 	(metronome-resume)
       (metronome-pause))))
