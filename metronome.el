@@ -57,41 +57,40 @@
 (defvar metronome-paused-p nil
   "Whether the metronome is paused.")
 
-(defun metronome-high-click (&optional sleep)
-  "Play high click sound.
+(defun metronome-play-click (&optional sleep)
+  "Play low click sound.
 With optional argument SLEEP, wait for SLEEP seconds."
-  (play-sound-file metronome-high-click-sound)
+  (play-sound-file metronome-click)
   (when sleep (sit-for sleep)))
 
-(defun metronome-low-click (&optional sleep)
-  "Play low tick sound.
+(defun metronome-play-accent (&optional sleep)
+  "Play high click sound.
 With optional argument SLEEP, wait for SLEEP seconds."
-  (play-sound-file metronome-low-click-sound)
+  (play-sound-file metronome-accent)
   (when sleep (sit-for sleep)))
 
 ;; This metronome also includes the number of beats per bar (based on:
 ;; https://rosettacode.org/wiki/Metronome). Start the metronome with:
-;; (while t (metronome-beat 120 4)) and stop it with C-g, or:
-;; (setq metronome-timer
-;;       (run-at-time t (/ 60.0 (float bpm)) 'metronome-beats bpm bpb))
+;; (metronome-cycle 120 4) and stop it with C-g.
 
-(defun metronome-beat (bpm bpb)
+(defun metronome-cycle (bpm bpb)
   "Play BPB clicks at BPM beats per minute.
 Use the first click to distinguish the cycle."
-  (let ((counter 0)
-	(sleep (/ 60.0 (float bpm))))
-    (cl-loop for i from 1 to bpb
-	     do (cl-incf counter)
-	     if (= (% counter bpb) 1)
-	     collect (metronome-high-click sleep)
-	     else
-	     collect (metronome-low-click sleep))))
+  (while t
+    (let ((counter 0)
+	  (sleep (/ 60.0 (float bpm))))
+      (cl-loop for i from 1 to bpb
+	       do (cl-incf counter)
+	       if (= (% counter bpb) 1)
+	       collect (metronome-play-accent sleep)
+	       else
+	       collect (metronome-play-click sleep)))))
 
 (defun metronome-start (bpm)
   "Start metronome at BPM beats per minute."
   (metronome-stop)
   (setq metronome-timer
-	(run-at-time t (/ 60.0 (float bpm)) 'metronome-low-click))
+	(run-at-time t (/ 60.0 (float bpm)) 'metronome-play-click))
   (setq metronome-tempo bpm
 	metronome-paused-p nil))
 
