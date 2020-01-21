@@ -107,6 +107,7 @@ Use the first click to distinguish the cycle."
     (setq metronome-paused-p t)))
 
 (defun metronome-resume ()
+  "Resume the metronome."
   (if-let (bpm metronome-tempo)
       (metronome-start bpm)
     (metronome-start (read-number "Tempo: ")))
