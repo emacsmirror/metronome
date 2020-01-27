@@ -26,7 +26,7 @@ You can also use `emacsclient` to control the metronome outside Emacs
 with some keyboard shortcut. Here's an example using `gnome-terminal`:
 
 ```shell
-#!/bin/sh
+#!/bin/bash
 
 tempo=0
 prompt() {
@@ -46,9 +46,11 @@ fi
 ```
 
 ```shell
-#!/bin/sh
+#!/bin/bash
 
-if [ $# -eq 1 ] || [ $(emacsclient -e "metronome-timer") = nil ] ; then
+timer=$(emacsclient -e "metronome-timer");
+
+if [ $# -eq 1 ] || [ "$timer" == nil ] ; then
     gnome-terminal --geometry=40x3+580+200 \
 		   --hide-menubar \
 		   --title="Metronome" \
