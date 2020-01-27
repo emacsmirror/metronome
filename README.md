@@ -11,4 +11,11 @@ A simple metronome for GNU Emacs.
 
 ## Usage
 
-`M-x metronome`
+```
+M-x metronome RET 120 4 RET
+                      ^
+                      optional
+```
+
+then `M-x metronome` to pause/resume, and `C-u M-x metronome` to
+set/play a new tempo.
