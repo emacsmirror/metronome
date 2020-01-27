@@ -126,7 +126,7 @@ which case prompt for a new input."
 		    (setq bpb (car-safe (cdr-safe it)))
 		    ;; as well as the bpm
 		    (car-safe it))
-		;; If BPM is not a symbol, then it's either an integer
+		;; If BPM is not a symbol, then it's an integer
 		(or (car-safe bpm) bpm)))
     ;; Now set the timer to run metronome-pattern for WAIT secs
     (setq metronome-timer
