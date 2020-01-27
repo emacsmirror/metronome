@@ -60,23 +60,6 @@
 (defvar metronome-paused-p nil
   "Whether the metronome is paused.")
 
-;; This metronome also includes the number of beats per bar (based on:
-;; https://rosettacode.org/wiki/Metronome). Start the metronome with:
-;; (metronome-cycle 120 4) and stop it with C-g.
-
-(defun metronome-cycle (bpm bpb)
-  "Play BPB clicks at BPM beats per minute.
-Use the first click to distinguish the cycle."
-  (while t
-    (let ((counter 0)
-	  (sleep (/ 60.0 (float bpm))))
-      (cl-loop for i from 1 to bpb
-	       do (cl-incf counter)
-	       if (= (% counter bpb) 1)
-	       collect (metronome-play-accent sleep)
-	       else
-	       collect (metronome-play-click sleep)))))
-
 (defun metronome-start (bpm)
   "Start metronome at BPM beats per minute."
   (metronome-stop)
