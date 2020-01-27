@@ -60,18 +60,6 @@
 (defvar metronome-paused-p nil
   "Whether the metronome is paused.")
 
-(defun metronome-play-click (&optional sleep)
-  "Play low click sound.
-With optional argument SLEEP, wait for SLEEP seconds."
-  (play-sound-file metronome-click)
-  (when sleep (sit-for sleep)))
-
-(defun metronome-play-accent (&optional sleep)
-  "Play high click sound.
-With optional argument SLEEP, wait for SLEEP seconds."
-  (play-sound-file metronome-accent)
-  (when sleep (sit-for sleep)))
-
 ;; This metronome also includes the number of beats per bar (based on:
 ;; https://rosettacode.org/wiki/Metronome). Start the metronome with:
 ;; (metronome-cycle 120 4) and stop it with C-g.
@@ -98,6 +86,14 @@ Use the first click to distinguish the cycle."
 	(run-at-time t (/ 60.0 (float bpm)) 'metronome-play-click))
   (setq metronome-tempo bpm
 	metronome-paused-p nil))
+(defun metronome-play-click ()
+  "Play low click sound."
+  (play-sound `(sound :file ,metronome-click)))
+
+(defun metronome-play-accent ()
+  "Play high click sound."
+  (play-sound `(sound :file ,metronome-accent)))
+
 
 (defun metronome-stop ()
   "Stop the metronome."
