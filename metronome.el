@@ -1,4 +1,4 @@
-;;; metronome.el --- A simple metronome for GNU Emacs -*- lexical-binding: t; -*-
+;;; metronome.el --- A simple metronome with accurate timing -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020 Jonathan Gregory
 
@@ -22,11 +22,14 @@
 
 ;;; Commentary:
 
-;; This is a simple metronome for GNU Emacs. To install it from
-;; source, add metronome.el to your load path and require it. Then
-;; press `M-x metronome' to start the metronome. The first call will
-;; prompt you for a tempo. Subsequent calls will either pause or
-;; resume the metronome. To change tempo press C-u M-x metronome.
+;; This is a metronome for GNU Emacs. To install it from source, add
+;; metronome.el to your load path and require it. Then press M-x
+;; metronome to start the metronome. The first call will prompt for
+;; the tempo. Subsequent calls will either pause or resume the
+;; metronome. To change tempo press C-u M-x metronome. There are two
+;; ways to input the tempo. Either as an integer (the BPM) or as two
+;; integers separated by space where the second integer is the number
+;; of beats per bar.
 
 ;;; Code:
 
