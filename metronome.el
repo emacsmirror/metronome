@@ -60,15 +60,6 @@
 (defvar metronome-paused-p nil
   "Whether the metronome is paused.")
 
-(defun metronome-start (bpm)
-  "Start metronome at BPM beats per minute."
-  (metronome-stop)
-  (setq bpm (if (numberp bpm) bpm
-	      (read-number "Tempo: ")))
-  (setq metronome-timer
-	(run-at-time t (/ 60.0 (float bpm)) 'metronome-play-click))
-  (setq metronome-tempo bpm
-	metronome-paused-p nil))
 (defun metronome-play-click ()
   "Play low click sound."
   (play-sound `(sound :file ,metronome-click)))
@@ -77,6 +68,38 @@
   "Play high click sound."
   (play-sound `(sound :file ,metronome-accent)))
 
+(defun metronome-intervals (bpm &optional bpb)
+  "Return a list of intervals in secs relative to beat one.
+For example, 4 BPB at 120 BPM yields (0.0 0.5 1.0 1.5)."
+  (let* ((secs)
+	 (delay (/ 60 (float bpm)))
+	 (wait delay)
+	 (now (string-to-number
+	       (format-time-string "%S" (current-time)))))
+    (dotimes (i (or bpb 1))
+      (push (+ now (cl-incf wait delay)) secs))
+    (setq secs (mapcar (lambda (sec)
+			 (- (car secs) sec))
+		       secs))))
+
+(defun metronome-duration (bpm &optional bpb)
+  "Calculate the duration in seconds between cycles.
+The duration is the time span of one full cycle of BPB beats per
+bar at BPM beats per minute."
+  (let ((secs (metronome-intervals bpm (or bpb 1)))
+	(delay (/ 60 (float bpm))))
+    (* delay (length secs))))
+
+(defun metronome-pattern (bpm &optional bpb)
+  "Play metronome pattern once at BPM beats per minute.
+With optional argument BPB, play a different sound on the first
+of BPB beats per bar."
+  (let ((secs (metronome-intervals bpm (or bpb 1))))
+    (dolist (i secs)
+      (if (and (= i (car secs))
+	       (> bpb 1))
+	  (run-with-timer i nil #'metronome-play-accent)
+	(run-with-timer i nil #'metronome-play-click)))))
 
 (defun metronome-stop ()
   "Stop the metronome."
@@ -85,6 +108,33 @@
     (setq metronome-timer nil
 	  metronome-tempo nil
 	  metronome-paused-p t)))
+
+(defun metronome-start (bpm)
+  "Start metronome at BPM beats per minute.
+BPM can be a list of integers where the first element is the BPM
+and the second element is the BPB. It can also be a symbol, in
+which case prompt for a new input."
+  (let ((bpb (or (car-safe (cdr-safe bpm)) 1)))
+    ;; First stop timer if running
+    (metronome-stop)
+    ;; Prompt if BPM is set to 'prompt
+    (setq bpm (if (symbolp bpm)
+		  (let* ((it (read-from-minibuffer "Tempo: "))
+			 (it (split-string it "\s"))
+			 (it (mapcar #'string-to-number it)))
+		    ;; Set the bpb if there is one
+		    (setq bpb (car-safe (cdr-safe it)))
+		    ;; as well as the bpm
+		    (car-safe it))
+		;; If BPM is not a symbol, then it's either an integer
+		(or (car-safe bpm) bpm)))
+    ;; Now set the timer to run metronome-pattern for WAIT secs
+    (setq metronome-timer
+	  (let ((wait (metronome-duration bpm (or bpb 1)))
+		(bpb (or bpb 1)))
+	    (run-at-time nil wait #'metronome-pattern bpm bpb)))
+    (setq metronome-tempo (list bpm (or bpb 1))
+	  metronome-paused-p nil)))
 
 (defun metronome-pause ()
   "Pause the metronome."
@@ -102,7 +152,11 @@
 ;;;###autoload
 (defun metronome (arg)
   "Start/pause/resume metronome.
-With a prefix ARG, prompt for a new tempo."
+With a prefix ARG, prompt for a new tempo.
+
+There are two ways of inputting the tempo. Either as an
+integer (the BPM) or as two integers separated by space, where
+the second integer is the number of beats per bar."
   (interactive "P")
   (if (or arg (null metronome-timer))
       (metronome-start 'prompt)
