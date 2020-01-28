@@ -19,12 +19,12 @@ M-x metronome RET 120 4 RET
 
 then `M-x metronome` to pause/resume, and `C-u M-x metronome` to
 set/play a new tempo. You can also set a new tempo by tapping two or
-more times with the `metronome-tap-tempo` command.
+more times successively with the `metronome-tap-tempo` command.
 
 ## emacsclient
 
-You can also use `emacsclient` to control the metronome outside Emacs
-with some keyboard shortcut. Here's an example using `gnome-terminal`:
+You can use `emacsclient` to control the metronome outside Emacs with
+some keyboard shortcut. Here's an example using `gnome-terminal`:
 
 ```shell
 #!/bin/bash
@@ -56,7 +56,7 @@ if [ $# -eq 1 ] || [ "$timer" == nil ] ; then
 		   --hide-menubar \
 		   --title="Metronome" \
 		   --wait \
-		   --profile="met" \
+		   --profile="metronome" \
 		   -- metronome-prompt
 else
     emacsclient -e "(call-interactively 'metronome)"
