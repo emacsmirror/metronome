@@ -68,8 +68,9 @@
   "Play high click sound."
   (play-sound `(sound :file ,metronome-accent)))
 
-(defun metronome-intervals (bpm &optional bpb)
-  "Return a list of intervals in secs relative to beat one.
+;; metronome-delays
+(defun metronome-delays (bpm &optional bpb)
+  "Return a list of seconds ber beat relative to beat one.
 For example, 4 BPB at 120 BPM yields (0.0 0.5 1.0 1.5)."
   (let* ((secs)
 	 (delay (/ 60 (float bpm)))
@@ -86,15 +87,15 @@ For example, 4 BPB at 120 BPM yields (0.0 0.5 1.0 1.5)."
   "Calculate the duration in seconds between cycles.
 The duration is the time span of one full cycle of BPB beats per
 bar at BPM beats per minute."
-  (let ((secs (metronome-intervals bpm (or bpb 1)))
+  (let ((secs (metronome-delays bpm (or bpb 1)))
 	(delay (/ 60 (float bpm))))
     (* delay (length secs))))
 
-(defun metronome-pattern (bpm &optional bpb)
+(defun metronome-play-pattern (bpm &optional bpb)
   "Play metronome pattern once at BPM beats per minute.
 With optional argument BPB, play a different sound on the first
 of BPB beats per bar."
-  (let ((secs (metronome-intervals bpm (or bpb 1))))
+  (let ((secs (metronome-delays bpm (or bpb 1))))
     (dolist (i secs)
       (if (and (= i (car secs))
 	       (> bpb 1))
@@ -128,11 +129,11 @@ which case prompt for a new input."
 		    (car-safe it))
 		;; If BPM is not a symbol, then it's an integer
 		(or (car-safe bpm) bpm)))
-    ;; Now set the timer to run metronome-pattern for WAIT secs
+    ;; Now set the timer to run metronome-play-pattern for WAIT secs
     (setq metronome-timer
 	  (let ((wait (metronome-duration bpm (or bpb 1)))
 		(bpb (or bpb 1)))
-	    (run-at-time nil wait #'metronome-pattern bpm bpb)))
+	    (run-at-time nil wait #'metronome-play-pattern bpm bpb)))
     (setq metronome-tempo (list bpm (or bpb 1))
 	  metronome-paused-p nil)))
 
