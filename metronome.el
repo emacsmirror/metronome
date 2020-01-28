@@ -150,6 +150,40 @@ which case prompt for a new input."
     (metronome-start 'prompt))
   (setq metronome-paused-p nil))
 
+;;; Tap Tempo
+
+(defvar metronome-elapsed-time nil)
+(defconst metronome-cached-time (current-time))
+
+(defun metronome-find-difference (seq)
+  "Find the difference between consecutive numbers in SEQ."
+  (let* ((l1 (remove (butlast seq) seq))
+	 (l2 (remove (car seq) seq)))
+    (cl-mapcar (lambda (x y)
+		 (- (- x y)))
+	       l2 l1)))
+
+;;;###autoload
+(defun metronome-tap-tempo ()
+  "Tap to set new tempo when called two or more times successively."
+  (interactive)
+  ;; First clear tempo cache
+  (unless (eq last-command 'metronome-tap-tempo)
+    (setq metronome-elapsed-time nil))
+  (let ((message-log-max nil)
+	(last-time (car metronome-elapsed-time))
+	;; Collect elapsed time since cached time
+	(time (string-to-number
+	       (format "%.02f" (float-time (time-since metronome-cached-time))))))
+    (setq metronome-elapsed-time
+	  (list time (or last-time (truncate time))))
+    ;; Find the difference between TIME and LAST-TIME
+    (let* ((secs (metronome-find-difference metronome-elapsed-time))
+    	   (bpm (/ 60 (float (car secs)))))
+      (metronome-play-click)
+      (setq metronome-tempo bpm)
+      (message (format "%d" bpm)))))
+
 ;;;###autoload
 (defun metronome (arg)
   "Start/pause/resume metronome.

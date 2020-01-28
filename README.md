@@ -18,7 +18,8 @@ M-x metronome RET 120 4 RET
 ```
 
 then `M-x metronome` to pause/resume, and `C-u M-x metronome` to
-set/play a new tempo.
+set/play a new tempo. You can also set a new tempo by tapping two or
+more times with the `metronome-tap-tempo` command.
 
 ## emacsclient
 
