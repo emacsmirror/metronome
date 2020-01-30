@@ -177,6 +177,7 @@ which case prompt for a new input."
   (unless (eq last-command 'metronome-tap-tempo)
     (setq metronome-elapsed-time nil))
   (let ((message-log-max nil)
+	(bpb (cadr metronome-tempo))
 	(last-time (car metronome-elapsed-time))
 	;; Collect elapsed time since cached time
 	(time (string-to-number
@@ -188,7 +189,7 @@ which case prompt for a new input."
     	   (bpm (metronome-maybe-round
 		 (/ 60 (float (car secs))))))
       (metronome-play-click)
-      (setq metronome-tempo bpm)
+      (setq metronome-tempo (list bpm bpb))
       (message (format "%d" bpm)))))
 
 ;;;###autoload
