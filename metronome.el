@@ -68,7 +68,6 @@
   "Play high click sound."
   (play-sound `(sound :file ,metronome-accent)))
 
-;; metronome-delays
 (defun metronome-delays (bpm &optional bpb)
   "Return a list of seconds ber beat relative to beat one.
 For example, 4 BPB at 120 BPM yields (0.0 0.5 1.0 1.5)."
@@ -99,8 +98,8 @@ of BPB beats per bar."
     (dolist (i secs)
       (if (and (= i (car secs))
 	       (> bpb 1))
-	  (run-with-timer i nil #'metronome-play-accent)
-	(run-with-timer i nil #'metronome-play-click)))))
+	  (run-with-timer i nil 'metronome-play-accent)
+	(run-with-timer i nil 'metronome-play-click)))))
 
 (defun metronome-stop ()
   "Stop the metronome."
@@ -133,7 +132,7 @@ which case prompt for a new input."
     (setq metronome-timer
 	  (let ((wait (metronome-duration bpm (or bpb 1)))
 		(bpb (or bpb 1)))
-	    (run-at-time nil wait #'metronome-play-pattern bpm bpb)))
+	    (run-at-time nil wait 'metronome-play-pattern bpm bpb)))
     (setq metronome-tempo (list bpm (or bpb 1))
 	  metronome-paused-p nil)))
 
