@@ -109,6 +109,12 @@ of BPB beats per bar."
 	  metronome-tempo nil
 	  metronome-paused-p t)))
 
+(defun metronome-maybe-round (bpm)
+  "Round BPM up or down if outside 30-250 range."
+  (cond ((< bpm 30) 30)
+	((> bpm 250) 250)
+	(t bpm)))
+
 (defun metronome-start (bpm)
   "Start metronome at BPM beats per minute.
 BPM can be a list of integers where the first element is the BPM
@@ -128,6 +134,7 @@ which case prompt for a new input."
 		    (car-safe it))
 		;; If BPM is not a symbol, then it's an integer
 		(or (car-safe bpm) bpm)))
+    (setq bpm (metronome-maybe-round bpm))
     ;; Now set the timer to run metronome-play-pattern for WAIT secs
     (setq metronome-timer
 	  (let ((wait (metronome-duration bpm (or bpb 1)))
@@ -178,7 +185,8 @@ which case prompt for a new input."
 	  (list time (or last-time (truncate time))))
     ;; Find the difference between TIME and LAST-TIME
     (let* ((secs (metronome-find-difference metronome-elapsed-time))
-    	   (bpm (/ 60 (float (car secs)))))
+    	   (bpm (metronome-maybe-round
+		 (/ 60 (float (car secs))))))
       (metronome-play-click)
       (setq metronome-tempo bpm)
       (message (format "%d" bpm)))))
