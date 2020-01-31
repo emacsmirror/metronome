@@ -102,10 +102,20 @@ of BPB beats per bar."
 	  (run-with-timer i nil 'metronome-play-accent)
 	(run-with-timer i nil 'metronome-play-click)))))
 
+(defun metronome-cancel-timers ()
+  "Cancel all metronome timers."
+  (dolist (timer timer-list)
+    (when-let* ((fn (aref timer 5))
+		(fn (when (symbolp fn)
+		      (symbol-name fn))))
+      ;; Only cancel timers running metronome-play-* functions
+      (when (string-match "^metronome-play-\\(pattern\\|click\\)" fn)
+	(cancel-timer timer)))))
+
 (defun metronome-stop ()
   "Stop the metronome."
-  (when-let (timer metronome-timer)
-    (cancel-timer timer)
+  (when metronome-timer
+    (metronome-cancel-timers)
     (setq metronome-timer nil
 	  metronome-tempo nil
 	  metronome-paused-p t)))
@@ -146,8 +156,8 @@ which case prompt for a new input."
 
 (defun metronome-pause ()
   "Pause the metronome."
-  (when-let (timer metronome-timer)
-    (cancel-timer timer)
+  (when metronome-timer
+    (metronome-cancel-timers)
     (setq metronome-paused-p t)))
 
 (defun metronome-resume ()
