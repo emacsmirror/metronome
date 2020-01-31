@@ -33,6 +33,7 @@
 
 ;;; Code:
 
+(require 'timer)
 (require 'cl-lib)
 
 (defgroup metronome nil
