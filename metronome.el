@@ -106,7 +106,8 @@ of BPB beats per bar."
   "Cancel all metronome timers."
   (dolist (timer timer-list)
     (when-let (fn (aref timer 5))
-      (let ((fn (symbol-name fn)))
+      (when-let (fn (and (symbolp fn)
+                         (symbol-name fn)))
 	;; Only cancel timers running metronome-play-* functions
 	(when (string-match "^metronome-play-\\(pattern\\|click\\)" fn)
 	  (cancel-timer timer))))))
