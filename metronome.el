@@ -105,12 +105,11 @@ of BPB beats per bar."
 (defun metronome-cancel-timers ()
   "Cancel all metronome timers."
   (dolist (timer timer-list)
-    (when-let* ((fn (aref timer 5))
-		(fn (when (symbolp fn)
-		      (symbol-name fn))))
-      ;; Only cancel timers running metronome-play-* functions
-      (when (string-match "^metronome-play-\\(pattern\\|click\\)" fn)
-	(cancel-timer timer)))))
+    (when-let (fn (aref timer 5))
+      (let ((fn (symbol-name fn)))
+	;; Only cancel timers running metronome-play-* functions
+	(when (string-match "^metronome-play-\\(pattern\\|click\\)" fn)
+	  (cancel-timer timer))))))
 
 (defun metronome-stop ()
   "Stop the metronome."
@@ -132,7 +131,7 @@ BPM can be a list of integers where the first element is the BPM
 and the second element is the BPB. It can also be a symbol, in
 which case prompt for a new input."
   (let ((bpb (or (car-safe (cdr-safe bpm)) 1)))
-    ;; First stop timer if running
+    ;; First stop timer(s) if running
     (metronome-stop)
     ;; Prompt if BPM is set to 'prompt
     (setq bpm (if (symbolp bpm)
@@ -187,6 +186,7 @@ which case prompt for a new input."
   ;; First clear tempo cache
   (unless (eq last-command 'metronome-tap-tempo)
     (setq metronome-elapsed-time nil))
+  ;; and pause if metronome is running
   (unless metronome-paused-p
     (metronome-pause))
   (let ((message-log-max nil)
