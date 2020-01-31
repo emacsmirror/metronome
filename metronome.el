@@ -177,6 +177,8 @@ which case prompt for a new input."
   ;; First clear tempo cache
   (unless (eq last-command 'metronome-tap-tempo)
     (setq metronome-elapsed-time nil))
+  (unless metronome-paused-p
+    (metronome-pause))
   (let ((message-log-max nil)
 	(bpb (cadr metronome-tempo))
 	(last-time (car metronome-elapsed-time))
