@@ -196,6 +196,26 @@ which case prompt for a new input."
       (message (format "%d" bpm)))))
 
 ;;;###autoload
+(defun metronome-increment-tempo ()
+  "Increment tempo by 2."
+  (interactive)
+  (let ((message-log-max nil)
+	(tempo (car metronome-tempo)))
+    (setf (car metronome-tempo) (+ tempo 2))
+    (metronome-start metronome-tempo)
+    (message (format "%d" (car metronome-tempo)))))
+
+;;;###autoload
+(defun metronome-decrement-tempo ()
+  "Decrement tempo by 2."
+  (interactive)
+  (let ((message-log-max nil)
+	(tempo (car metronome-tempo)))
+    (setf (car metronome-tempo) (- tempo 2))
+    (metronome-start metronome-tempo)
+    (message (format "%d" (car metronome-tempo)))))
+
+;;;###autoload
 (defun metronome (arg)
   "Start/pause/resume metronome.
 With a prefix ARG, prompt for a new tempo.
