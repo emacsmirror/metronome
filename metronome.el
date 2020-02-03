@@ -35,6 +35,7 @@
 
 (require 'timer)
 (require 'cl-lib)
+(require 'subr-x)
 
 (defgroup metronome nil
   "Metronome utilities."
