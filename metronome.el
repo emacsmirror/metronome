@@ -100,8 +100,8 @@ of BPB beats per bar."
     (dolist (i secs)
       (if (and (= i (car secs))
 	       (> bpb 1))
-	  (run-with-timer i nil 'metronome-play-accent)
-	(run-with-timer i nil 'metronome-play-click)))))
+	  (run-with-timer i nil #'metronome-play-accent)
+	(run-with-timer i nil #'metronome-play-click)))))
 
 (defun metronome-cancel-timers ()
   "Cancel all metronome timers."
@@ -151,7 +151,7 @@ which case prompt for a new input."
     (setq metronome-timer
 	  (let ((wait (metronome-duration bpm (or bpb 1)))
 		(bpb (or bpb 1)))
-	    (run-at-time nil wait 'metronome-play-pattern bpm bpb)))
+	    (run-at-time nil wait #'metronome-play-pattern bpm bpb)))
     (setq metronome-tempo (list bpm (or bpb 1))
 	  metronome-paused-p nil)))
 
