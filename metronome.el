@@ -77,7 +77,7 @@ For example, 4 BPB at 120 BPM yields (0.0 0.5 1.0 1.5)."
 	 (wait delay)
 	 (now (string-to-number
 	       (format-time-string "%S" (current-time)))))
-    (dotimes (i (or bpb 1))
+    (dotimes (_i (or bpb 1))
       (push (+ now (cl-incf wait delay)) secs))
     (setq secs (mapcar (lambda (sec)
 			 (- (car secs) sec))
