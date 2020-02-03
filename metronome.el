@@ -205,7 +205,7 @@ which case prompt for a new input."
 		 (/ 60 (float (car secs))))))
       (metronome-play-click)
       (setq metronome-tempo (list bpm bpb))
-      (message (format "%d" bpm)))))
+      (message "%d" bpm))))
 
 ;;;###autoload
 (defun metronome-increment-tempo ()
@@ -215,7 +215,7 @@ which case prompt for a new input."
 	(tempo (car metronome-tempo)))
     (setf (car metronome-tempo) (+ tempo 2))
     (metronome-start metronome-tempo)
-    (message (format "%d" (car metronome-tempo)))))
+    (message "%d" (car metronome-tempo))))
 
 ;;;###autoload
 (defun metronome-decrement-tempo ()
@@ -225,7 +225,7 @@ which case prompt for a new input."
 	(tempo (car metronome-tempo)))
     (setf (car metronome-tempo) (- tempo 2))
     (metronome-start metronome-tempo)
-    (message (format "%d" (car metronome-tempo)))))
+    (message "%d" (car metronome-tempo))))
 
 ;;;###autoload
 (defun metronome (arg)
