@@ -1,4 +1,4 @@
-;;; metronome.el --- A simple metronome with accurate timing -*- lexical-binding: t; -*-
+;;; metronome.el --- A simple metronome -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020 Jonathan Gregory
 
@@ -26,10 +26,13 @@
 ;; metronome.el to your load path and require it. Then press M-x
 ;; metronome to start the metronome. The first call will prompt for
 ;; the tempo. Subsequent calls will either pause or resume the
-;; metronome. To change tempo press C-u M-x metronome. There are two
-;; ways to input the tempo. Either as an integer (the BPM) or as two
-;; integers separated by space where the second integer is the number
-;; of beats per bar.
+;; metronome. To change tempo press C-u M-x metronome. When prompted,
+;; enter an integer (the BPM) or two integers separated by space where
+;; the second integer is the number of beats per bar.
+
+;; For a visual reference of the tempo, beat and bar count, use the
+;; metronome-display command. See metronome-mode-map for a list of
+;; commands.
 
 ;;; Code:
 
@@ -62,6 +65,108 @@
 (defvar metronome-paused-p nil
   "Whether the metronome is paused.")
 
+
+;;; Metronome buffer
+
+(defvar metronome-buffer-name "*metronome*")
+(defvar metronome-display-timer nil)
+(defvar metronome-oscillator 0)
+(defvar metronome-beat-counter 0)
+(defvar metronome-bar-counter 0)
+(defvar metronome-bar-counter-timer nil)
+(defvar metronome-bar-count 8)
+(defvar metronome-bar-count-p t)
+(defvar metronome-bar-count-voice-p nil)
+
+(defface metronome-tempo-face '((t :height 4.5))
+  "Face for the metronome tempo.")
+(defface metronome-beat-face '((t (:height 3.5)))
+  "Face for the beat count.")
+(defface metronome-oscillator-face '((t :height 3.5))
+  "Face for the oscillator.")
+(defface metronome-bar-face '((t :height 2.5))
+  "Face for the bar count.")
+
+(defvar metronome-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map " " 'metronome-display)
+    (define-key map "n" 'metronome-increment-tempo)
+    (define-key map "p" 'metronome-decrement-tempo)
+    (define-key map "h" 'metronome-tap-tempo)
+    (define-key map "s" 'metronome-set-tempo)
+    (define-key map "v" 'metronome-toggle-voice-count)
+    (define-key map "q" 'metronome-exit)
+    map)
+  "Keymap of the metronome mode.")
+
+(defun metronome-mode ()
+  "Major mode for displaying and controlling a metronome."
+  (kill-all-local-variables)
+  (setq-local cursor-type nil)
+  (setq major-mode 'metronome-mode
+	mode-name "Metronome")
+  (use-local-map metronome-mode-map))
+
+(defun metronome-count-bars ()
+  "Increment and return the bar count for each bar cycle played.
+Reset the count after every `metronome-bar-count' bars. When
+`metronome-bar-count-voice-p' is non-nil, also send the count
+output to spd-say (text-to-speech command)."
+  (cl-incf metronome-bar-counter)
+  (when (and metronome-bar-count
+             (> metronome-bar-counter metronome-bar-count))
+    (setq metronome-bar-counter 1))
+  (when metronome-bar-count-p
+    (when (and metronome-bar-count-voice-p
+               (executable-find "spd-say"))
+      (call-process-shell-command
+       (format "spd-say -r 50 '%d'" metronome-bar-counter))))
+  metronome-bar-counter)
+
+(defun metronome-start-bar-counter ()
+  "Start bar counter timer.
+Do nothing if the BPB is 1."
+  (let* ((bpm (car metronome-tempo))
+         (bpb (or (cadr metronome-tempo) 1))
+         (secs (metronome-duration bpm bpb)))
+    (when (> bpb 1)
+      (setq metronome-bar-counter-timer
+            (run-at-time nil secs #'metronome-count-bars)))))
+
+(defun metronome-count-beats ()
+  "Count the number of beats in one bar."
+  (cl-incf metronome-beat-counter)
+  (when (> metronome-beat-counter (cadr metronome-tempo))
+    (setq metronome-beat-counter 1))
+  metronome-beat-counter)
+
+(defun metronome-redisplay ()
+  "Create and update the metronome buffer."
+  (with-current-buffer metronome-buffer-name
+    (setq buffer-read-only nil)
+    (erase-buffer)
+    (let* ((bpm (format "%d" (car metronome-tempo)))
+           (bpb (cadr metronome-tempo))
+           (count (format " %d" (metronome-count-beats))))
+      (insert (propertize bpm 'face 'metronome-tempo-face))
+      ;; This adds a visual emphasis on beat 1
+      (set-face-attribute 'metronome-beat-face nil
+                          :overline (or (= metronome-beat-counter 1)
+                                        (= metronome-beat-counter 0)))
+      (if (null (= bpb 1))
+          (insert (propertize count 'face 'metronome-beat-face))
+        (cl-incf metronome-oscillator)
+        (let ((osc (if (cl-oddp metronome-oscillator)
+                       " 1 " " 2 ")))
+          (insert (propertize osc 'face 'metronome-oscillator-face))))
+      (when-let (bar-count (and metronome-bar-count-p
+                                (null (= bpb 1))
+                                (format " %d" metronome-bar-counter)))
+        (insert (propertize bar-count 'face 'metronome-bar-face)))
+      (setq buffer-read-only t))))
+
+;;; Core functions
+
 (defun metronome-play-click ()
   "Play low click sound."
   (play-sound `(sound :file ,metronome-click)))
@@ -103,23 +208,29 @@ of BPB beats per bar."
 	  (run-with-timer i nil #'metronome-play-accent)
 	(run-with-timer i nil #'metronome-play-click)))))
 
+(defvar metronome-timer-regexp
+  "^metronome-\\(\\(play-\\(click\\|pattern\\)\\)\\|redisplay\\|count-bars\\)")
+
 (defun metronome-cancel-timers ()
-  "Cancel all metronome timers."
+  "Cancel all metronome timers and reset variables."
   (dolist (timer timer-list)
     (when-let (fn (aref timer 5))
       (when-let (fn (and (symbolp fn)
                          (symbol-name fn)))
-	;; Only cancel timers running metronome-play-* functions
-	(when (string-match "^metronome-play-\\(pattern\\|click\\)" fn)
-	  (cancel-timer timer))))))
+	;; Only cancel timers running metronome functions
+	(when (string-match metronome-timer-regexp fn)
+	  (cancel-timer timer)))))
+  (setq metronome-beat-counter 0
+        metronome-oscillator 0
+        metronome-bar-counter 0
+        metronome-bar-counter-timer nil
+        metronome-display-timer nil))
 
 (defun metronome-stop ()
   "Stop the metronome."
   (when metronome-timer
-    (metronome-cancel-timers)
-    (setq metronome-timer nil
-	  metronome-tempo nil
-	  metronome-paused-p t)))
+    (metronome-pause)
+    (setq metronome-tempo nil)))
 
 (defun metronome-maybe-round (bpm)
   "Round BPM up or down if outside 30-250 range."
@@ -129,9 +240,9 @@ of BPB beats per bar."
 
 (defun metronome-start (bpm)
   "Start metronome at BPM beats per minute.
-BPM can be a list of integers where the first element is the BPM
-and the second element is the BPB. It can also be a symbol, in
-which case prompt for a new input."
+BPM can be an integer or a list of integers where the first
+element is the BPM and the second element is the BPB. It can also
+be a symbol, in which case prompt for a new input."
   (let ((bpb (or (car-safe (cdr-safe bpm)) 1)))
     ;; First stop timer(s) if running
     (metronome-stop)
@@ -140,9 +251,8 @@ which case prompt for a new input."
 		  (let* ((it (read-from-minibuffer "Tempo: "))
 			 (it (split-string it "\s"))
 			 (it (mapcar #'string-to-number it)))
-		    ;; Set the bpb if there is one
+		    ;; Set bpm and bpb (if there is one)
 		    (setq bpb (car-safe (cdr-safe it)))
-		    ;; as well as the bpm
 		    (car-safe it))
 		;; If BPM is not a symbol, then it's an integer
 		(or (car-safe bpm) bpm)))
@@ -168,6 +278,7 @@ which case prompt for a new input."
     (metronome-start 'prompt))
   (setq metronome-paused-p nil))
 
+
 ;;; Tap Tempo
 
 (defvar metronome-elapsed-time nil)
@@ -205,36 +316,96 @@ which case prompt for a new input."
 		 (/ 60 (float (car secs))))))
       (metronome-play-click)
       (setq metronome-tempo (list bpm bpb))
-      (message "%d" bpm))))
+      (if (get-buffer metronome-buffer-name)
+          (with-current-buffer metronome-buffer-name
+            (setq buffer-read-only nil)
+            (erase-buffer)
+            (let ((tempo (format "%d" (car metronome-tempo))))
+              (insert (propertize tempo 'face 'metronome-tempo-face))
+              (setq buffer-read-only t)))
+        (message "%d" bpm)))))
 
+
 ;;;###autoload
-(defun metronome-increment-tempo ()
-  "Increment tempo by 2."
+(defun metronome-increment-tempo (&optional dec)
+  "Increment tempo by 2.
+With optional DEC argument, decrement tempo by 2."
   (interactive)
   (let ((message-log-max nil)
-	(tempo (car metronome-tempo)))
-    (setf (car metronome-tempo) (+ tempo 2))
+ 	(tempo (car metronome-tempo)))
+    (setf (car metronome-tempo) (+ tempo (if dec -2 2)))
     (metronome-start metronome-tempo)
-    (message "%d" (car metronome-tempo))))
+    (when metronome-display-timer
+      (metronome-pause))
+    (if (get-buffer metronome-buffer-name)
+        (metronome-display nil)
+      (metronome-start metronome-tempo)
+      (message "%d" (car metronome-tempo)))))
 
 ;;;###autoload
 (defun metronome-decrement-tempo ()
   "Decrement tempo by 2."
   (interactive)
-  (let ((message-log-max nil)
-	(tempo (car metronome-tempo)))
-    (setf (car metronome-tempo) (- tempo 2))
-    (metronome-start metronome-tempo)
-    (message "%d" (car metronome-tempo))))
+  (metronome-increment-tempo 'decrement))
+
+;;;###autoload
+(defun metronome-set-tempo ()
+  "Set a new tempo with optional beats per bar."
+  (interactive)
+  (when metronome-display-timer
+    (metronome-pause))
+  (metronome-start 'prompt)
+  (metronome nil)
+  (metronome-display nil))
+
+;;;###autoload
+(defun metronome-toggle-voice-count ()
+  "Toggle the voice count."
+  (interactive)
+  (if (executable-find "spd-say")
+      (setq metronome-bar-count-voice-p
+            (if metronome-bar-count-voice-p
+                nil t))
+    (user-error "The spd-say program is not installed")))
+
+;;;###autoload
+(defun metronome-exit ()
+  "Exit metronome buffer."
+  (interactive)
+  (let ((window (get-buffer-window metronome-buffer-name)))
+    (kill-buffer metronome-buffer-name)
+    (when (and window (not (one-window-p window)))
+      (delete-window window))
+    (when metronome-display-timer
+      (metronome-pause))))
+
+;;;###autoload
+(defun metronome-display (arg)
+  "Start/pause/resume metronome and display its buffer.
+With a prefix ARG, prompt for a new tempo."
+  (interactive "P")
+  (if (null metronome-display-timer)
+      (with-current-buffer
+          (get-buffer-create metronome-buffer-name)
+        (pop-to-buffer metronome-buffer-name)
+        (unless metronome-paused-p
+          (metronome-pause))
+        (call-interactively #'metronome arg)
+        (metronome-start-bar-counter)
+        (let ((secs (metronome-duration (car metronome-tempo))))
+          (setq metronome-display-timer
+                (run-at-time nil secs #'metronome-redisplay))
+          (metronome-mode)))
+    (metronome-pause)))
 
 ;;;###autoload
 (defun metronome (arg)
   "Start/pause/resume metronome.
 With a prefix ARG, prompt for a new tempo.
 
-There are two ways of inputting the tempo. Either as an
-integer (the BPM) or as two integers separated by space, where
-the second integer is the number of beats per bar."
+When prompted, enter an integer (the BPM) or two integers
+separated by space, where the second integer is the number of
+beats per bar."
   (interactive "P")
   (if (or arg (null metronome-timer))
       (metronome-start 'prompt)
