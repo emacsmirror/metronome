@@ -75,7 +75,7 @@
 (defvar metronome-bar-counter 0)
 (defvar metronome-bar-counter-timer nil)
 (defvar metronome-bar-count 8)
-(defvar metronome-bar-count-p t)
+(defvar metronome-bar-count-p nil)
 (defvar metronome-bar-count-voice-p nil)
 
 (defface metronome-tempo-face '((t :height 4.5))
