@@ -22,17 +22,20 @@
 
 ;;; Commentary:
 
-;; This is a metronome for GNU Emacs. To install it from source, add
-;; metronome.el to your load path and require it. Then press M-x
-;; metronome to start the metronome. The first call will prompt for
-;; the tempo. Subsequent calls will either pause or resume the
-;; metronome. To change tempo press C-u M-x metronome. When prompted,
-;; enter an integer (the BPM) or two integers separated by space where
-;; the second integer is the number of beats per bar.
+;; This is a simple metronome for GNU Emacs. To install it from
+;; source, add metronome.el to your load path and require it. Then M-x
+;; metronome to play/pause, and C-u M-x metronome to set/play a new
+;; tempo. When prompted, enter the BPM and optional beats per bar
+;; preceded by space.
 
-;; For a visual reference of the tempo, beat and bar count, use the
-;; metronome-display command. See metronome-mode-map for a list of
-;; commands.
+;; You can also set a new tempo by tapping two or more times
+;; successively with the metronome-tap-tempo command, or with the
+;; metronome-(in/de)crement-tempo commands.
+
+;; For a visual reference of the tempo, beat and (optional) bar count,
+;; use the metronome-display command. Press SPC to play/pause, n/p to
+;; change tempo, h/s to tap/set a new tempo, and q to quit. See
+;; metronome-mode-map for a list of commands.
 
 ;;; Code:
 
