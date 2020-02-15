@@ -17,7 +17,7 @@ M-x metronome RET 120 4 RET
                       optional
 ```
 
-then `M-x metronome` to play/pause, and `C-u M-x metronome` to
+then `M-x metronome` to pause/resume, and `C-u M-x metronome` to
 set/play a new tempo. When prompted, enter the BPM and optional beats
 per bar preceded by space. You can also set a new tempo by tapping two
 or more times successively with the `metronome-tap-tempo` command, or
