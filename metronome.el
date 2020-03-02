@@ -102,13 +102,10 @@
     map)
   "Keymap of the metronome mode.")
 
-(defun metronome-mode ()
-  "Major mode for displaying and controlling a metronome."
-  (kill-all-local-variables)
-  (setq-local cursor-type nil)
-  (setq major-mode 'metronome-mode
-	mode-name "Metronome")
-  (use-local-map metronome-mode-map))
+(define-derived-mode metronome-mode special-mode "Metronome"
+  "Major mode for displaying and controlling a metronome.
+\\{metronome-mode-map}"
+  (setq-local cursor-type nil))
 
 (defun metronome-count-bars ()
   "Increment and return the bar count for each bar cycle played.
@@ -179,7 +176,7 @@ Do nothing if the BPB is 1."
   (play-sound `(sound :file ,metronome-accent)))
 
 (defun metronome-delays (bpm &optional bpb)
-  "Return a list of seconds ber beat relative to beat one.
+  "Return a list of seconds per beat relative to beat one.
 For example, 4 BPB at 120 BPM yields (0.0 0.5 1.0 1.5)."
   (let* ((secs)
 	 (delay (/ 60 (float bpm)))
