@@ -366,7 +366,8 @@ With optional DEC argument, decrement tempo by 2."
   "Toggle the voice count."
   (interactive)
   (if (executable-find "spd-say")
-      (setq metronome-bar-count-voice-p
+      (setq metronome-bar-count-p t
+            metronome-bar-count-voice-p
             (if metronome-bar-count-voice-p
                 nil t))
     (user-error "The spd-say program is not installed")))
