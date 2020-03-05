@@ -35,7 +35,7 @@
 ;; For a visual reference of the tempo, beat and (optional) bar count,
 ;; use the metronome-display command. Press SPC to play/pause, n/p to
 ;; change tempo, h/s to tap/set a new tempo, and q to quit. See
-;; metronome-mode-map for a list of commands.
+;; metronome-mode for a list of commands.
 
 ;;; Code:
 
@@ -373,12 +373,9 @@ With optional DEC argument, decrement tempo by 2."
 (defun metronome-exit ()
   "Exit metronome buffer."
   (interactive)
-  (let ((window (get-buffer-window metronome-buffer-name)))
-    (kill-buffer metronome-buffer-name)
-    (when (and window (not (one-window-p window)))
-      (delete-window window))
-    (when metronome-display-timer
-      (metronome-pause))))
+  (quit-window)
+  (when metronome-display-timer
+    (metronome-pause)))
 
 ;;;###autoload
 (defun metronome-display (arg)
