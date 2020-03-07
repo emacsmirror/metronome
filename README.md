@@ -1,8 +1,14 @@
+[![MELPA](https://melpa.org/packages/metronome-badge.svg)](https://melpa.org/#/metronome)
+
 # metronome
 
 A simple metronome for GNU Emacs.
 
 ## Installation
+
+This package is available in Melpa and can be installed from the Emacs
+package manager. To install it from source, add metronome.el to your
+load path and require it:
 
 ```
 (add-to-list 'load-path "/path/to/metronome.el")
