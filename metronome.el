@@ -382,19 +382,17 @@ With optional DEC argument, decrement tempo by 2."
   "Start/pause/resume metronome and display its buffer.
 With a prefix ARG, prompt for a new tempo."
   (interactive "P")
-  (if (null metronome-display-timer)
-      (with-current-buffer
-          (get-buffer-create metronome-buffer-name)
-        (pop-to-buffer metronome-buffer-name)
-        (unless metronome-paused-p
-          (metronome-pause))
-        (call-interactively #'metronome arg)
-        (metronome-start-bar-counter)
-        (let ((secs (metronome-duration (car metronome-tempo))))
-          (setq metronome-display-timer
-                (run-at-time nil secs #'metronome-redisplay))
-          (metronome-mode)))
-    (metronome-pause)))
+  (if metronome-display-timer
+      (metronome-pause)
+    (call-interactively #'metronome arg)
+    (with-current-buffer
+        (get-buffer-create metronome-buffer-name)
+      (pop-to-buffer metronome-buffer-name)
+      (metronome-start-bar-counter)
+      (let ((secs (metronome-duration (car metronome-tempo))))
+        (setq metronome-display-timer
+              (run-at-time nil secs #'metronome-redisplay))
+        (metronome-mode)))))
 
 ;;;###autoload
 (defun metronome (arg)
