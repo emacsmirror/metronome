@@ -335,9 +335,8 @@ With optional DEC argument, decrement tempo by 2."
  	(tempo (car metronome-tempo)))
     (setf (car metronome-tempo) (+ tempo (if dec -2 2)))
     (metronome-start metronome-tempo)
-    (when metronome-display-timer
-      (metronome-pause))
-    (if (get-buffer metronome-buffer-name)
+    (if (equal (current-buffer)
+               (get-buffer metronome-buffer-name))
         (metronome-display nil)
       (metronome-start metronome-tempo)
       (message "%d" (car metronome-tempo)))))
