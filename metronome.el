@@ -384,6 +384,8 @@ With a prefix ARG, prompt for a new tempo."
   (interactive "P")
   (if metronome-display-timer
       (metronome-pause)
+    (unless metronome-paused-p
+      (metronome-pause))
     (call-interactively #'metronome arg)
     (with-current-buffer
         (get-buffer-create metronome-buffer-name)
