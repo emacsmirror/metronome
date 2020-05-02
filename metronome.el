@@ -123,11 +123,16 @@ output to spd-say (text-to-speech command)."
        (format "spd-say -r 50 '%d'" metronome-bar-counter))))
   metronome-bar-counter)
 
+(defun metronome-get-tempo (&optional bpb)
+  "Return the current BPM or optional BPB when set."
+  (if bpb (or (cadr metronome-tempo) 1)
+    (car metronome-tempo)))
+
 (defun metronome-start-bar-counter ()
   "Start bar counter timer.
 Do nothing if the BPB is 1."
-  (let* ((bpm (car metronome-tempo))
-         (bpb (or (cadr metronome-tempo) 1))
+  (let* ((bpm (metronome-get-tempo))
+         (bpb (metronome-get-tempo t))
          (secs (metronome-duration bpm bpb)))
     (when (> bpb 1)
       (setq metronome-bar-counter-timer
@@ -136,7 +141,8 @@ Do nothing if the BPB is 1."
 (defun metronome-count-beats ()
   "Count the number of beats in one bar."
   (cl-incf metronome-beat-counter)
-  (when (> metronome-beat-counter (cadr metronome-tempo))
+  (when (> metronome-beat-counter
+	   (metronome-get-tempo 'beats))
     (setq metronome-beat-counter 1))
   metronome-beat-counter)
 
@@ -145,8 +151,8 @@ Do nothing if the BPB is 1."
   (with-current-buffer metronome-buffer-name
     (setq buffer-read-only nil)
     (erase-buffer)
-    (let* ((bpm (format "%d" (car metronome-tempo)))
-           (bpb (cadr metronome-tempo))
+    (let* ((bpm (format "%d" (metronome-get-tempo)))
+           (bpb (metronome-get-tempo t))
            (count (format " %d" (metronome-count-beats))))
       (insert (propertize bpm 'face 'metronome-tempo-face))
       ;; This adds a visual emphasis on beat 1
@@ -252,17 +258,16 @@ be a symbol, in which case prompt for a new input."
 			 (it (split-string it "\s"))
 			 (it (mapcar #'string-to-number it)))
 		    ;; Set bpm and bpb (if there is one)
-		    (setq bpb (car-safe (cdr-safe it)))
+		    (setq bpb (or (car-safe (cdr-safe it)) 1))
 		    (car-safe it))
 		;; If BPM is not a symbol, then it's an integer
 		(or (car-safe bpm) bpm)))
     (setq bpm (metronome-maybe-round bpm))
     ;; Now set the timer to run metronome-play-pattern for WAIT secs
     (setq metronome-timer
-	  (let ((wait (metronome-duration bpm (or bpb 1)))
-		(bpb (or bpb 1)))
+	  (let ((wait (metronome-duration bpm bpb)))
 	    (run-at-time nil wait #'metronome-play-pattern bpm bpb)))
-    (setq metronome-tempo (list bpm (or bpb 1))
+    (setq metronome-tempo (list bpm bpb)
 	  metronome-paused-p nil)))
 
 (defun metronome-pause ()
@@ -303,7 +308,7 @@ be a symbol, in which case prompt for a new input."
   (unless metronome-paused-p
     (metronome-pause))
   (let ((message-log-max nil)
-	(bpb (cadr metronome-tempo))
+	(bpb (metronome-get-tempo 'beats))
 	(last-time (car metronome-elapsed-time))
 	;; Collect elapsed time since cached time
 	(time (string-to-number
@@ -320,7 +325,7 @@ be a symbol, in which case prompt for a new input."
           (with-current-buffer metronome-buffer-name
             (setq buffer-read-only nil)
             (erase-buffer)
-            (let ((tempo (format "%d" (car metronome-tempo))))
+            (let ((tempo (format "%d" (metronome-get-tempo))))
               (insert (propertize tempo 'face 'metronome-tempo-face))
               (setq buffer-read-only t)))
         (message "%d" bpm)))))
@@ -332,14 +337,14 @@ be a symbol, in which case prompt for a new input."
 With optional DEC argument, decrement tempo by 2."
   (interactive)
   (let ((message-log-max nil)
- 	(tempo (car metronome-tempo)))
+ 	(tempo (metronome-get-tempo)))
     (setf (car metronome-tempo) (+ tempo (if dec -2 2)))
     (metronome-start metronome-tempo)
     (if (equal (current-buffer)
                (get-buffer metronome-buffer-name))
         (metronome-display nil)
       (metronome-start metronome-tempo)
-      (message "%d" (car metronome-tempo)))))
+      (message "%d" (metronome-get-tempo)))))
 
 ;;;###autoload
 (defun metronome-decrement-tempo ()
