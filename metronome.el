@@ -100,7 +100,7 @@
     (define-key map "v" 'metronome-toggle-voice-count)
     (define-key map "q" 'metronome-exit)
     map)
-  "Keymap of the metronome mode.")
+  "Keymap for `metronome-mode'.")
 
 (define-derived-mode metronome-mode special-mode "Metronome"
   "Major mode for displaying and controlling a metronome.
@@ -171,8 +171,9 @@ Do nothing if the BPB is 1."
         (insert (propertize bar-count 'face 'metronome-bar-face)))
       (setq buffer-read-only t))))
 
-;;; Core functions
 
+;;; Core functions
+
 (defun metronome-play-click ()
   "Play low click sound."
   (play-sound `(sound :file ,metronome-click)))
@@ -250,20 +251,14 @@ BPM can be an integer or a list of integers where the first
 element is the BPM and the second element is the BPB. It can also
 be a symbol, in which case prompt for a new input."
   (let ((bpb (or (car-safe (cdr-safe bpm)) 1)))
-    ;; First stop timer(s) if running
     (metronome-stop)
-    ;; Prompt if BPM is set to 'prompt
     (setq bpm (if (symbolp bpm)
 		  (let* ((it (read-from-minibuffer "Tempo: "))
 			 (it (split-string it "\s"))
 			 (it (mapcar #'string-to-number it)))
-		    ;; Set bpm and bpb (if there is one)
 		    (setq bpb (or (car-safe (cdr-safe it)) 1))
 		    (car-safe it))
-		;; If BPM is not a symbol, then it's an integer
 		(or (car-safe bpm) bpm)))
-    (setq bpm (metronome-maybe-round bpm))
-    ;; Now set the timer to run metronome-play-pattern for WAIT secs
     (setq metronome-timer
 	  (let ((wait (metronome-duration bpm bpb)))
 	    (run-at-time nil wait #'metronome-play-pattern bpm bpb)))
@@ -301,10 +296,9 @@ be a symbol, in which case prompt for a new input."
 (defun metronome-tap-tempo ()
   "Tap to set new tempo when called two or more times successively."
   (interactive)
-  ;; First clear tempo cache
+  ;; Clear tempo cache
   (unless (eq last-command 'metronome-tap-tempo)
     (setq metronome-elapsed-time nil))
-  ;; and pause if metronome is running
   (unless metronome-paused-p
     (metronome-pause))
   (let ((message-log-max nil)
