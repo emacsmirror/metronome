@@ -259,6 +259,8 @@ be a symbol, in which case prompt for a new input."
 		    (setq bpb (or (car-safe (cdr-safe it)) 1))
 		    (car-safe it))
 		(or (car-safe bpm) bpm)))
+    (setq bpm (if (= bpm 0) 120
+		(metronome-maybe-round bpm)))
     (setq metronome-timer
 	  (let ((wait (metronome-duration bpm bpb)))
 	    (run-at-time nil wait #'metronome-play-pattern bpm bpb)))
