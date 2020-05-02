@@ -59,6 +59,13 @@
   "The filename of the high click sound."
   :type 'file)
 
+(defcustom metronome-window-size nil
+  "Resize metronome window vertically by N lines.
+If N is a positive integer, enlarge window. If N is a negative
+ integer, shrink window. With a non-nil value, make window fill
+ its frame."
+  :type '(choice integer boolean))
+
 (defvar metronome-timer nil
   "The timer of the metronome.")
 
@@ -77,6 +84,7 @@
 (defvar metronome-beat-counter 0)
 (defvar metronome-bar-counter 0)
 (defvar metronome-bar-counter-timer nil)
+
 (defvar metronome-bar-count 8)
 (defvar metronome-bar-count-p nil)
 (defvar metronome-bar-count-voice-p nil)
@@ -373,9 +381,13 @@ With optional DEC argument, decrement tempo by 2."
 (defun metronome-exit ()
   "Exit metronome buffer."
   (interactive)
-  (quit-window)
-  (when metronome-display-timer
-    (metronome-pause)))
+  (let ((window (get-buffer-window metronome-buffer-name)))
+    (quit-window)
+    (when (and window
+	       (null (one-window-p t)))
+      (delete-window))
+    (when metronome-display-timer
+      (metronome-pause))))
 
 ;;;###autoload
 (defun metronome-display (arg)
@@ -387,14 +399,21 @@ With a prefix ARG, prompt for a new tempo."
     (unless metronome-paused-p
       (metronome-pause))
     (call-interactively #'metronome arg)
-    (with-current-buffer
-        (get-buffer-create metronome-buffer-name)
-      (pop-to-buffer metronome-buffer-name)
-      (metronome-start-bar-counter)
-      (let ((secs (metronome-duration (car metronome-tempo))))
-        (setq metronome-display-timer
-              (run-at-time nil secs #'metronome-redisplay))
-        (metronome-mode)))))
+    (let ((buffer metronome-buffer-name)
+	  (window-size metronome-window-size))
+      (if (and window-size
+	       (symbolp window-size))
+	  (pop-to-buffer-same-window buffer)
+	(set-window-buffer (if (window-live-p (get-buffer-window buffer))
+			       (get-buffer-window buffer)
+			     (split-window-vertically window-size))
+			   (get-buffer-create buffer))
+	(pop-to-buffer buffer)))
+    (metronome-start-bar-counter)
+    (let ((secs (metronome-duration (metronome-get-tempo))))
+      (setq metronome-display-timer
+	    (run-at-time nil secs #'metronome-redisplay))
+      (metronome-mode))))
 
 ;;;###autoload
 (defun metronome (arg)
