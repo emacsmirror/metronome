@@ -39,6 +39,13 @@ more information.
 
 ## A note on accuracy
 
-Perfect timing is difficult on a multitasking system, especially when
-the system is loaded. If you know how to improve the timing please let
-me know.
+The time intervals are good enough for general practising, but perfect
+timing is difficult on a multitasking system, so expect some limping
+when the system is loaded. A better (but more advanced) option is to
+use the JACK sound server daemon, (see the `jack_metro` command, for
+example), or the
+[cl-collider](https://github.com/byulparan/cl-collider) library to
+connect to the SuperCollider server. I would also suggest using the
+[cl-patterns](https://github.com/defaultxr/cl-patterns) library to
+create even more sophisticated patterns.
+
