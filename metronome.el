@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2020 Jonathan Gregory
 
-;; Version: 0.1
+;; Version: 0.2
 ;; Package-Requires: ((emacs "25.1"))
 ;; URL: https://gitlab.com/jagrg/metronome
 ;; Author: Jonathan Gregory <jgrg at autistici dot org>
