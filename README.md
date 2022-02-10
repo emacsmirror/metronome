@@ -1,6 +1,6 @@
 [![MELPA](https://melpa.org/packages/metronome-badge.svg)](https://melpa.org/#/metronome)
 
-# metronome
+# metronome.el
 
 A simple metronome for GNU Emacs.
 
@@ -13,6 +13,7 @@ metronome.el to your load path and require it:
 ```
 (add-to-list 'load-path "/path/to/metronome.el")
 (require 'metronome)
+(global-set-key (kbd "C-c C-m") 'metronome)
 ```
 
 ## Usage
