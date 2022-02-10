@@ -1,6 +1,6 @@
 ;;; metronome.el --- A simple metronome -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2020 Jonathan Gregory
+;; Copyright (C) 2020-2022 Jonathan Gregory
 
 ;; Version: 0.2
 ;; Package-Requires: ((emacs "25.1"))
