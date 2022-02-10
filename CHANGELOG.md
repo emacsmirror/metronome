@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2] - 2022-02-09
+
+### Removed
+
+- Metronome display functions
+- Tap tempo function
+- Increment/Decrement functions
+
+### Changed
+
+- Click sound
+
 ## [0.1] - 2020-05-02
 
 ### Added
