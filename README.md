@@ -2,19 +2,21 @@
 
 # metronome.el
 
-A simple metronome for GNU Emacs.
+The missing metronome for GNU Emacs.
+
 
 ## Installation
 
 This package is available in the MELPA repository and can be installed
 from the Emacs package manager. To install it from source, add
-metronome.el to your load path and require it:
+`metronome.el` to your load path and require it:
 
 ```
 (add-to-list 'load-path "/path/to/metronome.el")
 (require 'metronome)
-(global-set-key (kbd "C-c C-m") 'metronome)
+(global-set-key (kbd "C-c m") 'metronome)
 ```
+
 
 ## Usage
 
@@ -27,13 +29,45 @@ new tempo. See the
 [wiki](https://gitlab.com/jagrg/metronome/-/wikis/pages) for more
 information.
 
+
+## Flashing the modeline on every beat
+
+```lisp
+(defun metronome-flash-mode-line ()
+  (let ((visible-bell nil)
+        (ring-bell-function
+         (lambda ()
+           (invert-face 'mode-line)
+           (run-with-timer 0.1 nil #'invert-face 'mode-line))))
+    (beep)))
+
+(advice-remove 'metronome-play-click #'metronome-flash-mode-line)
+```
+
+
+## Interacting with the metronome outside Emacs
+
+```bash
+#!/bin/bash
+
+timer=$(emacsclient -e "metronome-timer");
+
+if [ $# -eq 1 ] || [ "$timer" == nil ]
+then
+    tempo=$(zenity --entry --title "Metronome" --text "Tempo: ")
+    emacsclient -e -a "" "(metronome-start $tempo)"
+else
+    emacsclient -e "(call-interactively #'metronome)"
+fi
+```
+
+
 ## A note on accuracy
 
 The time intervals are good enough for general practising, but perfect
 timing is difficult on a multitasking system, so expect some limping
 when the system is loaded. A better (but more advanced) option is to
-use the JACK sound server daemon (see the `jack_metro` command, for
-example), or the
+use the JACK sound server daemon (see `jack_metro`), or the
 [cl-collider](https://github.com/byulparan/cl-collider) library to
 connect to the SuperCollider server (see also the
 [cl-patterns](https://github.com/defaultxr/cl-patterns) library).
