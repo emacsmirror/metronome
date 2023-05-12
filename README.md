@@ -48,7 +48,7 @@ information.
 ## Interacting with the metronome outside Emacs
 
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 
 timer=$(emacsclient -e "metronome-timer");
 
