@@ -41,7 +41,7 @@ information.
            (run-with-timer 0.1 nil #'invert-face 'mode-line))))
     (beep)))
 
-(advice-remove 'metronome-play-click #'metronome-flash-mode-line)
+(advice-add 'metronome-play-click :before #'metronome-flash-mode-line)
 ```
 
 
