@@ -64,7 +64,7 @@ fi
 
 ## A note on accuracy
 
-The time intervals are good enough for general practising, but perfect
+The time intervals are good enough for causal practicing, but perfect
 timing is difficult on a multitasking system, so expect some limping
 when the system is loaded. A better (but more advanced) option is to
 use the JACK sound server daemon (see `jack_metro`), or the
