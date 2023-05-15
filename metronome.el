@@ -1,10 +1,10 @@
-;;; metronome.el --- A simple metronome -*- lexical-binding: t; -*-
+;;; metronome.el --- The missing metronome for GNU Emacs -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2020-2022 Jonathan Gregory
+;; Copyright (C) 2020-2023 Jonathan Gregory
 
 ;; Version: 0.2
 ;; Package-Requires: ((emacs "25.1"))
-;; URL: https://gitlab.com/jagrg/metronome
+;; URL: https://git.sr.ht/~jagrg/metronome
 ;; Author: Jonathan Gregory <jgrg at autistici dot org>
 
 ;; This program is free software; you can redistribute it and/or modify
